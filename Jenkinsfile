@@ -23,9 +23,6 @@ pipeline {
     }
     post {
         cleanup {
-            sh label: "Remove image ", script: """
-                docker image rm ${image_name}:${image_tag} || true;
-            """
             sh label: "Prune images ", script: """
                 docker image prune --force;
             """
