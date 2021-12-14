@@ -8,4 +8,4 @@ VOLUME /etc/hosts-dnsmasq
 
 EXPOSE 53 53/udp
 
-ENTRYPOINT ["dnsmasq", "-k"]
+ENTRYPOINT ["dnsmasq", "-k" "--no-hosts" "--addn-hosts=/etc/hosts-dnsmasq"]
