@@ -12,6 +12,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry( '', registry_credentials ) {
+                        builder_name = env.architectures.replaceAll(',', '-').replaceAll('/', '_')
                         sh label: "Create a new builder if one does not already exist", script: """
                             docker buildx inspect ${builder_name} || docker buildx create --name ${builder_name} --platform ${architectures}
                         """
