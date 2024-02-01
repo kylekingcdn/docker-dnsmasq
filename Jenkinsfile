@@ -3,7 +3,7 @@ pipeline {
     environment {
         image_name = 'kylekingcdn/dnsmasq'
         image_tag = 'latest'
-        architectures = 'linux/arm64/v8,linux/amd64'
+        architectures = 'linux/arm64,linux/amd64'
         registry_endpoint = ''
         registry_credentials = 'dockerhub-credentials'
     }
@@ -12,9 +12,19 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry( '', registry_credentials ) {
+                        sh label: "Create a new builder if one does not already exist", script: """
+                            docker buildx inspect ${builder_name} || docker buildx create --name ${builder_name} --platform ${architectures}
+                        """
                         sh label: "Build Image ", script: """
-                            docker buildx create --use && \
-                            docker buildx build -t ${image_name}:${image_tag} --platform ${architectures} --force-rm --no-cache --pull --push .
+                            docker buildx build \
+                                --tag ${image_name}:${image_tag} \
+                                --platform ${architectures} \
+                                --builder ${builder_name} \
+                                --force-rm \
+                                --no-cache \
+                                --pull \
+                                --push \
+                                .
                         """
                     }
                 }
@@ -23,9 +33,6 @@ pipeline {
     }
     post {
         cleanup {
-            sh label: "Prune images ", script: """
-                docker image prune --force;
-            """
             cleanWs()
         }
     }
